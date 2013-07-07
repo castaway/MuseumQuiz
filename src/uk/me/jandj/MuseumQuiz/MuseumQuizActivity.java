@@ -6,8 +6,11 @@ import android.database.sqlite.*;
 import android.widget.*;
 import android.database.*;
 import java.util.*;
+import android.view.View;
+import android.widget.Button;
+import android.graphics.*;
 
-public class MuseumQuizActivity extends Activity
+public class MuseumQuizActivity extends Activity implements View.OnClickListener
 {
     private int currentQuiz = 1;
     private int currentQuestion;
@@ -46,6 +49,29 @@ public class MuseumQuizActivity extends Activity
 	@Override
 	protected void onPause() {
 		super.onPause();
+	}
+	
+	public void onClick(View view) {
+		Button answerBtn = (Button)view;
+		int btnId = (Integer)answerBtn.getTag();
+		int correctId = getCorrectAnswer();
+		
+		if(btnId == correctId) {
+			answerBtn.getBackground().setColorFilter(Color.GREEN, PorterDuff.Mode.OVERLAY);
+		} else {
+			answerBtn.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.OVERLAY);			
+		}
+	}
+	
+	private int getCorrectAnswer() {
+		SQLiteDatabase readDb = quizDb.getReadableDatabase();
+		String answerSQL = "SELECT id FROM answers WHERE question_id =  ? AND correct=1";
+		String[] answerArgs = {String.valueOf(currentQuestion)};
+		
+		Cursor answerCursor = readDb.rawQuery(answerSQL, answerArgs);
+		answerCursor.moveToFirst();
+		int answerCorrect = answerCursor.getInt(answerCursor.getColumnIndex("id"));
+		return answerCorrect;
 	}
 	
 	private void displayNextQuestion(int question) {
@@ -96,7 +122,7 @@ public class MuseumQuizActivity extends Activity
 			Button answerButton = (Button)findViewById(buttonMap.get(countButton));
 			answerButton.setText(answerText);
 			answerButton.setTag(new Integer(answerId));
-			
+			answerButton.setOnClickListener(this);
 		} while (nextQCursor.moveToNext());
 		nextQCursor.close();
 	}
