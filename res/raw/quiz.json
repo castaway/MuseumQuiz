@@ -1,6 +1,6 @@
 {
     "id" :1,
-    "name": "Robots Quiz"
+    "name": "Robots Quiz",
     "questions": [
         {
             "desc": "What model was Arnold Swarznegger's Terminator?",
@@ -29,7 +29,7 @@
             ]
         },
         {
-            "desc": What year did Furby first go on sale?",
+            "desc": "What year did Furby first go on sale?",
             "id": 2,
             "answers": [
                 {

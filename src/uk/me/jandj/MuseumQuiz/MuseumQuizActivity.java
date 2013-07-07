@@ -15,6 +15,7 @@ import android.util.*;
 import java.io.*;
 import org.json.*;
 import android.content.*;
+import android.graphics.drawable.*;
 
 public class MuseumQuizActivity extends Activity implements View.OnClickListener
 {
@@ -38,6 +39,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		}
         setContentView(R.layout.main);
 		Button nextButton = (Button)findViewById(R.id.next_button);
+
 		nextButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
 				currentQuestion++;
@@ -91,7 +93,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		if(btnId == correctId) {
 			answerBtn.getBackground().setColorFilter(Color.GREEN, PorterDuff.Mode.OVERLAY);
 		} else {
-			answerBtn.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.OVERLAY);			
+			answerBtn.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.OVERLAY);
 			Button correctBtn = (Button)findViewById(R.id.answers).findViewWithTag(new Integer(correctId));
 			correctBtn.getBackground().setColorFilter(Color.GREEN, PorterDuff.Mode.OVERLAY);
 		}
@@ -169,6 +171,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 			answerButton.setText(answerText);
 			answerButton.setTag(new Integer(answerId));
 			answerButton.setOnClickListener(this);
+			answerButton.getBackground().clearColorFilter();
 		} while (nextQCursor.moveToNext());
 		nextQCursor.close();
 

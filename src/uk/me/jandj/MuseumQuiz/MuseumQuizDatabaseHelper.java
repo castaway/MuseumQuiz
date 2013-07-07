@@ -24,8 +24,8 @@ public class MuseumQuizDatabaseHelper extends SQLiteOpenHelper
 	"quiz_id INTEGER, " +
 	"question_id INTEGER, " +
 	"answer TEXT, " + 
-	"correct BOOLEAN. " +
-	"PRIMARY KEY(quiz_id, question_id, id);";
+	"correct BOOLEAN, " +
+	"PRIMARY KEY(quiz_id, question_id, id));";
 		
 	MuseumQuizDatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
