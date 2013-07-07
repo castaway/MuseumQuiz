@@ -60,7 +60,10 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 			answerBtn.getBackground().setColorFilter(Color.GREEN, PorterDuff.Mode.OVERLAY);
 		} else {
 			answerBtn.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.OVERLAY);			
+			Button correctBtn = (Button)findViewById(R.id.answers).findViewWithTag(new Integer(correctId));
+			correctBtn.getBackground().setColorFilter(Color.GREEN, PorterDuff.Mode.OVERLAY);
 		}
+		findViewById(R.id.next_button).setEnabled(true);
 	}
 	
 	private int getCorrectAnswer() {
@@ -125,5 +128,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 			answerButton.setOnClickListener(this);
 		} while (nextQCursor.moveToNext());
 		nextQCursor.close();
+
+		findViewById(R.id.next_button).setEnabled(false);
 	}
 }
