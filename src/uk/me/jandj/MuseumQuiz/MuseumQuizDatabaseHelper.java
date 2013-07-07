@@ -13,25 +13,20 @@ public class MuseumQuizDatabaseHelper extends SQLiteOpenHelper
 
 	private static final String QUESTION_TABLE_CREATE =
 	"CREATE TABLE questions (" +
-	"id INTEGER PRIMARY KEY, " +
+	"id INTEGER, " +
 	"quiz_id INTEGER, " +
-	"desc TEXT);";
+	"desc TEXT," +
+	"PRIMARY KEY(quiz_id, id));";
 
 	private static final String ANSWER_TABLE_CREATE =
 	"CREATE TABLE answers (" +
-	"id INTEGER PRIMARY KEY, " +
+	"id INTEGER, " +
+	"quiz_id INTEGER, " +
 	"question_id INTEGER, " +
 	"answer TEXT, " + 
-	"correct BOOLEAN);";
-	
-	private static final String INITIAL_DATA =
-	"INSERT INTO quizzes VALUES (1, 'Robot Quiz');" +
-	"INSERT INTO questions VALUES (1, 1, 'What model was Arnold Swarznegger's Terminator?');" +
-	"INSERT INTO answers VALUES(1, 1, 'T-100', 0);" +
-	"INSERT INTO answers VALUES(2, 1, 'T-20', 0);" +
-	"INSERT INTO answers VALUES(3, 1, 'T-800', 1);" +
-	"INSERT INTO answers VALUES(4, 1, 'T-1000', 0);";
-	
+	"correct BOOLEAN. " +
+	"PRIMARY KEY(quiz_id, question_id, id);";
+		
 	MuseumQuizDatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
@@ -42,6 +37,7 @@ public class MuseumQuizDatabaseHelper extends SQLiteOpenHelper
 		db.execSQL(QUESTION_TABLE_CREATE);
 		db.execSQL(ANSWER_TABLE_CREATE);
 //		db.execSQL(INITIAL_DATA);
+/*
 		ContentValues row = new ContentValues();
 		row.put("id", 1);
 		row.put("name", "Robots Quiz");
@@ -75,7 +71,8 @@ public class MuseumQuizDatabaseHelper extends SQLiteOpenHelper
 		row.put("answer", "T-1000");
 		row.put("correct", 0);
 		db.insert("answers", "id", row);
-	}
+*/
+		}
     
     @Override 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

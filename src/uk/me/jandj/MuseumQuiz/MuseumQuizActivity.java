@@ -9,6 +9,12 @@ import java.util.*;
 import android.view.View;
 import android.widget.Button;
 import android.graphics.*;
+import android.view.View.*;
+import android.view.*;
+import android.util.*;
+import java.io.*;
+import org.json.*;
+import android.content.*;
 
 public class MuseumQuizActivity extends Activity implements View.OnClickListener
 {
@@ -16,6 +22,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
     private int currentQuestion;
 	private int currentScore;
 	private MuseumQuizDatabaseHelper quizDb;
+	public static final int MENU_IMPORT = Menu.FIRST+1;
 	
     /** Called when the activity is first created. */
     @Override
@@ -30,7 +37,29 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 			currentScore = 0;
 		}
         setContentView(R.layout.main);
+		Button nextButton = (Button)findViewById(R.id.next_button);
+		nextButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View view) {
+				currentQuestion++;
+				displayNextQuestion(currentQuestion);
+			}
+		});
     }
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(Menu.NONE, MENU_IMPORT, Menu.NONE, "Import");
+		return super.onCreateOptionsMenu(menu);
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem menuItem) {
+		switch(menuItem.getItemId()) {
+			case MENU_IMPORT:
+			  importQuiz();
+		}
+		
+		return super.onOptionsItemSelected(menuItem);
+	}
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		outState.putInt("currentQuestion", currentQuestion);
@@ -40,6 +69,9 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 	protected void onStart() {
 		super.onStart();
 		quizDb = new MuseumQuizDatabaseHelper(this);
+		if(!quizLoaded()) {
+			importQuiz();
+		}
 		displayNextQuestion(currentQuestion);		
 	}
 	@Override
@@ -75,6 +107,17 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		answerCursor.moveToFirst();
 		int answerCorrect = answerCursor.getInt(answerCursor.getColumnIndex("id"));
 		return answerCorrect;
+	}
+	
+	private boolean quizLoaded() {
+		SQLiteDatabase readDb = quizDb.getReadableDatabase();
+		Cursor countQCursor = readDb.rawQuery("SELECT COUNT(*) FROM questions", null);
+		countQCursor.moveToFirst();
+		int total = countQCursor.getInt(0);
+		if (total > 0) {
+			return true;
+		}
+		return false;
 	}
 	
 	private void displayNextQuestion(int question) {
@@ -130,5 +173,73 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		nextQCursor.close();
 
 		findViewById(R.id.next_button).setEnabled(false);
+	}
+	
+	private JSONObject readJSONFile(InputStream jsonStream) {
+		Writer writer = new StringWriter();
+		char[] buffer = new char[1024];
+		try {
+			Reader reader = new BufferedReader(new InputStreamReader(jsonStream, "UTF-8"));
+			int n;
+			while ((n = reader.read(buffer)) != -1) {
+				writer.write(buffer, 0, n);
+			}
+		} catch(IOException e) {
+			System.err.println(e);
+		} finally {
+			try {
+				jsonStream.close();
+			} catch(IOException e) {
+				System.err.println(e);
+			}
+		}
+
+		String jsonString = writer.toString();
+		JSONObject quiz;
+		try {
+			quiz = (JSONObject) new JSONTokener(jsonString).nextValue();
+			return quiz;
+		} catch(JSONException e) {
+			System.err.println(e);
+		}
+		return null;
+	}
+	
+	private void importQuiz() {
+		JSONObject quiz = readJSONFile(getResources().openRawResource(R.raw.quiz));
+		SQLiteDatabase writeDb = quizDb.getWritableDatabase();
+
+		try {
+			ContentValues row = new ContentValues();
+			String name = quiz.getString("name");
+			int quiz_id = quiz.getInt("id");
+			row.put("id", quiz_id);
+			row.put("name", name);
+			writeDb.insert("quizzes", "id", row);
+			JSONArray questions = quiz.getJSONArray("questions");
+			for(int i=0; i< questions.length(); i++) {
+				JSONObject question = questions.getJSONObject(i);
+				int question_id = question.getInt("id");
+				row = new ContentValues();
+				row.put("id", question_id);
+				row.put("quiz_id", quiz_id);
+				row.put("desc", question.getString("desc"));
+				writeDb.insert("questions", "id", row);
+			
+				JSONArray answers = question.getJSONArray("answers");
+				for(int j=0; j< answers.length(); j++) {
+					JSONObject answer = answers.getJSONObject(j);
+					row = new ContentValues();
+					row.put("id", answer.getInt("id"));
+					row.put("quiz_id", quiz_id);
+					row.put("question_id", question_id);
+					row.put("answer", answer.getString("answer"));
+					row.put("correct", answer.getInt("correct"));
+					writeDb.insert("answers", "id", row);
+				}
+			}
+		} catch(JSONException e) {
+			System.err.println("Read JSON file failed: "+e);
+		}
 	}
 }
