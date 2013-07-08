@@ -57,6 +57,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 			}
 		});
     }
+/*
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, MENU_IMPORT, Menu.NONE, "Import");
@@ -71,7 +72,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		
 		return super.onOptionsItemSelected(menuItem);
 	}
-
+*/
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		outState.putInt("currentQuestion", currentQuestion);
