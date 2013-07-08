@@ -26,7 +26,16 @@ public class MuseumQuizDatabaseHelper extends SQLiteOpenHelper
 	"answer TEXT, " + 
 	"correct BOOLEAN, " +
 	"PRIMARY KEY(quiz_id, question_id, id));";
-		
+	
+	private static final String SCORES_TABLE_CREATE =
+	"CREATE TABLE scores (" +
+	"quiz_id INTEGER, " +
+	"min_range INTEGER, " +
+	"max_range INTEGER, " +
+	"title TEXT, " +
+	"text TEXT, " +
+	"PRIMARY KEY(quiz_id, min_range, max_range));";
+	
 	MuseumQuizDatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
@@ -36,6 +45,7 @@ public class MuseumQuizDatabaseHelper extends SQLiteOpenHelper
 		db.execSQL(QUIZ_TABLE_CREATE);
 		db.execSQL(QUESTION_TABLE_CREATE);
 		db.execSQL(ANSWER_TABLE_CREATE);
+		db.execSQL(SCORES_TABLE_CREATE);
 //		db.execSQL(INITIAL_DATA);
 /*
 		ContentValues row = new ContentValues();

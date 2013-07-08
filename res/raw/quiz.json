@@ -262,5 +262,25 @@
                 }
             ]
         }
+    ],
+    "scores":[
+        {
+            "min_range":0,
+            "max_range":3,
+            "title":"Wall-E",
+            "text":"A disappointing result. You are in urgent need of upgrading."
+        },
+        {
+            "min_range":4,
+            "max_range":7,
+            "title":"Robby the Robot",
+            "text":"Not bad. There is a spark of life in your circuits."
+        },
+        {
+            "min_range":8,
+            "max_range":10,
+            "title":"Terminator",
+            "text":"Congratulations, your processing power is functioning at the highest level."
+        }
     ]
 }

@@ -16,6 +16,7 @@ import java.io.*;
 import org.json.*;
 import android.content.*;
 import android.graphics.drawable.*;
+import android.text.*;
 
 public class MuseumQuizActivity extends Activity implements View.OnClickListener
 {
@@ -43,6 +44,15 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		nextButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
 				currentQuestion++;
+				displayNextQuestion(currentQuestion);
+			}
+		});
+		
+		Button restartButton  = (Button)findViewById(R.id.restart_button);
+		restartButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View view) {
+				currentQuestion=1;
+				currentScore=0;
 				displayNextQuestion(currentQuestion);
 			}
 		});
@@ -85,6 +95,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		super.onPause();
 	}
 	
+	// OnClick for Answer buttons, check if answer is correct, recolour button(s) appropriately, update score
 	public void onClick(View view) {
 		Button answerBtn = (Button)view;
 		int btnId = (Integer)answerBtn.getTag();
@@ -92,6 +103,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		
 		if(btnId == correctId) {
 			answerBtn.getBackground().setColorFilter(Color.GREEN, PorterDuff.Mode.OVERLAY);
+			currentScore++;
 		} else {
 			answerBtn.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.OVERLAY);
 			Button correctBtn = (Button)findViewById(R.id.answers).findViewWithTag(new Integer(correctId));
@@ -139,6 +151,11 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		totalQuestions = countQCursor.getInt(countQCursor.getColumnIndex("count"));
 		countQCursor.close();
 		
+		if(question > totalQuestions) {
+			displayScore();
+			return;
+		}
+		
 		TextView nOfM = (TextView)findViewById(R.id.n_of_m);
 		nOfM.setText("Question " + question + " of " + totalQuestions);
 		
@@ -166,16 +183,54 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 			int answerId = Integer.parseInt(nextQCursor.getString(nextQCursor.getColumnIndex("id")));
 			String answerText = nextQCursor.getString(nextQCursor.getColumnIndex("answer"));
 			countButton++;
-			System.err.println("Answer row: id=" + answerId + " text=" + answerText + " btn="+countButton);
 			Button answerButton = (Button)findViewById(buttonMap.get(countButton));
 			answerButton.setText(answerText);
 			answerButton.setTag(new Integer(answerId));
 			answerButton.setOnClickListener(this);
+			answerButton.setEnabled(true);
 			answerButton.getBackground().clearColorFilter();
 		} while (nextQCursor.moveToNext());
 		nextQCursor.close();
 
 		findViewById(R.id.next_button).setEnabled(false);
+	}
+	
+	// Re-use normal screen, disable all buttons apart from restart, display score in question window
+	private void displayScore() {
+		SQLiteDatabase readDb = quizDb.getReadableDatabase();
+		String scoreSQL = "SELECT title, text FROM scores WHERE " +
+//		"quiz_id = 1 AND min_range >= 7 AND max_range <= 7;";
+		"quiz_id = ? AND ? BETWEEN min_range AND max_range;";
+		String[] scoreArgs = {String.valueOf(currentQuiz), 
+			String.valueOf(currentScore) };
+//			String.valueOf(currentScore)};
+
+		System.err.println("quiz: " + currentQuiz + " score: " + currentScore + " SQL: " + scoreSQL);
+		Cursor scoreCursor = readDb.rawQuery(scoreSQL, scoreArgs);
+		scoreCursor.moveToFirst();
+		int rows = scoreCursor.getCount();
+		System.err.println("Rows " + rows);
+
+		String title = scoreCursor.getString(scoreCursor.getColumnIndex("title"));
+		String text = scoreCursor.getString(scoreCursor.getColumnIndex("text"));
+		TextView questionView = (TextView)findViewById(R.id.question_text);
+		String scoreResult = String.format("(%d) <b>%s</b>.%n %s", currentScore, title, text);
+		questionView.setText(Html.fromHtml(scoreResult));
+		
+		Button nextButton = (Button)findViewById(R.id.next_button);
+		nextButton.setEnabled(false);
+		Button answer1Button = (Button)findViewById(R.id.answer_1);
+		answer1Button.getBackground().clearColorFilter();
+		answer1Button.setEnabled(false);
+		Button answer2Button = (Button)findViewById(R.id.answer_2);
+		answer2Button.getBackground().clearColorFilter();
+		answer2Button.setEnabled(false);
+		Button answer3Button = (Button)findViewById(R.id.answer_3);
+		answer3Button.getBackground().clearColorFilter();
+		answer3Button.setEnabled(false);
+		Button answer4Button = (Button)findViewById(R.id.answer_4);
+		answer4Button.getBackground().clearColorFilter();
+		answer4Button.setEnabled(false);
 	}
 	
 	private JSONObject readJSONFile(InputStream jsonStream) {
@@ -240,6 +295,18 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 					row.put("correct", answer.getInt("correct"));
 					writeDb.insert("answers", "id", row);
 				}
+			}
+			JSONArray scores = quiz.getJSONArray("scores");
+			for (int k=0; k < scores.length(); k++) {
+				JSONObject score = scores.getJSONObject(k);
+				row = new ContentValues();
+				row.put("quiz_id", quiz_id);
+				row.put("min_range", score.getInt("min_range"));
+				row.put("max_range", score.getInt("max_range"));
+				row.put("title", score.getString("title"));
+				row.put("text", score.getString("text"));
+				System.err.println("Inserting score " + row.toString());
+				writeDb.insert("scores", "quiz_id", row);
 			}
 		} catch(JSONException e) {
 			System.err.println("Read JSON file failed: "+e);
