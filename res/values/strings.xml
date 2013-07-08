@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MuseumQuizActivity</string>
+    <string name="app_name">Robots Quiz</string>
+	<string name="description">A simple quiz about Robots for the Museum of Computing in Swindon</string>
 </resources>
