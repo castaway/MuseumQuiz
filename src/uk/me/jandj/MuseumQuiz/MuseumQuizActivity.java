@@ -22,6 +22,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 {
     private int currentQuiz = 1;
     private int currentQuestion;
+	private boolean answeredQuestion = false;
 	private int currentScore;
 	private MuseumQuizDatabaseHelper quizDb;
 	public static final int MENU_IMPORT = Menu.FIRST+1;
@@ -44,6 +45,7 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 		nextButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
 				currentQuestion++;
+				answeredQuestion = false;
 				displayNextQuestion(currentQuestion);
 			}
 		});
@@ -98,6 +100,10 @@ public class MuseumQuizActivity extends Activity implements View.OnClickListener
 	
 	// OnClick for Answer buttons, check if answer is correct, recolour button(s) appropriately, update score
 	public void onClick(View view) {
+		if(answeredQuestion) {
+			return;
+		}
+		answeredQuestion = true;
 		Button answerBtn = (Button)view;
 		int btnId = (Integer)answerBtn.getTag();
 		int correctId = getCorrectAnswer();
